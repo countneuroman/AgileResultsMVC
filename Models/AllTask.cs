@@ -10,7 +10,7 @@ namespace AgileResultsMVC.Models
         //Атрибут для проверки вводимого значения(реализация в данном контроллере).
         //Проверка на null реализуется с помощью атрибута Required.
         [Required]
-        [Remote(action:"VertifyPeriod",controller:"AllTasks")]
+        [Remote(action: "VertifyPeriod", controller:"AllTasks")]
         public string Period { get; set; }
         
         public string Title { get; set; }

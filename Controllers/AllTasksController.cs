@@ -19,16 +19,48 @@ namespace AgileResultsMVC.Controllers
             _context = context;
         }
 
+
+
         //Проверка значения в БД(реализовано атрибутом Remote в модели).
-        //НЕ РАБОТАЕТ ПРОВЕРКА НА НОЛЬ!
+        //Также проверяет количество созданных задач(на каждый период можно создать не более 3 задач!).
         [AcceptVerbs("GET", "POST")]
         public IActionResult VertifyPeriod(AllTask allTask)
-        {            
-            if (allTask.Period == "Day" || allTask.Period == "Week" || allTask.Period == "Month")
+        {
+            //НЕ РАБОТАЕТ ПРОВЕРКА НА НОЛЬ!
+            /*
+            if (!string.IsNullOrEmpty(allTask.Period))
             {
                 return Json(true);
             }
-            return Json($"Wrong period value!");            
+            */
+            //Вычисляем сколько задач создано на каждый период.
+            int countDayPeriod = _context.AllTask.Count(s => s.Period.StartsWith("Day"));
+            int countWeekPeriod = _context.AllTask.Count(s => s.Period.StartsWith("Week"));
+            int countMonthPeriod = _context.AllTask.Count(s => s.Period.StartsWith("Month"));
+
+            switch(allTask.Period)
+            {
+                case "Day":
+                    if (countDayPeriod < 3)
+                    {
+                        return Json(true);
+                    }
+                    return Json($"Нельзя создать более 3 задач на день!");
+                case "Week":
+                    if (countWeekPeriod < 3)
+                    {
+                        return Json(true);
+                    }
+                    return Json($"Нельзя создать более 3 задач на неделю!");
+                case "Month":
+                    if (countMonthPeriod < 3)
+                    {
+                        return Json(true);
+                    }
+                    return Json($"Нельзя создать более 3 задач на месяц!");
+                default:
+                    return Json($"Неправильное значение периода!");
+            }
         }
 
         // GET: AllTasks
