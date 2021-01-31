@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgileResultsMVC", "AgileResultsMVC.csproj", "{AD81B764-DDE4-400A-BAD5-3F54225E5BBF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AD81B764-DDE4-400A-BAD5-3F54225E5BBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD81B764-DDE4-400A-BAD5-3F54225E5BBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD81B764-DDE4-400A-BAD5-3F54225E5BBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD81B764-DDE4-400A-BAD5-3F54225E5BBF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {24ED8083-1D6B-47F6-A8B0-B3648CCED381}
+	EndGlobalSection
+EndGlobal
