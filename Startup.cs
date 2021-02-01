@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using AgileResultsMVC.Data;
 using AgileResultsMVC.Models;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,9 @@ namespace AgileResultsMVC
 
             services.AddDbContext<AgileResultsMVCContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("AgileResultsMVCContext")));
+
+            services.AddIdentity<User, IdentityRole>()
+                .AddEntityFrameworkStores<AgileResultsMVCContext>();//Сервисы для аутентификации.
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -50,6 +54,7 @@ namespace AgileResultsMVC
 
             app.UseRouting();
 
+            app.UseAuthentication();//подключение аутентификации
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

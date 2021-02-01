@@ -11,13 +11,16 @@ namespace AgileResultsMVC.Models
         //Проверка на null реализуется с помощью атрибута Required.
         [Required]
         [Remote(action: "VertifyPeriod", controller:"AllTasks")]
-        public string Period { get; set; }
-        
+        public string Period { get; set; }       
         public string Title { get; set; }
         public string Description { get; set; }
         [DataType(DataType.Date)]
         public DateTime CreateData { get; set; }
         [DataType(DataType.Date)]
         public DateTime CompletionDate { get; set; }
+        //Определяем отношение один к одному
+        //(здесь хранятся значения пользователя, к которому относятся задачи).
+        public string userId  { get; set; }
+        public User User { get; set; }
     }
 }
