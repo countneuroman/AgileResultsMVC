@@ -19,8 +19,6 @@ namespace AgileResultsMVC.Controllers
             _context = context;
         }
 
-
-
         //Проверка значения в БД(реализовано атрибутом Remote в модели).
         //Также проверяет количество созданных задач(на каждый период можно создать не более 3 задач!).
         [AcceptVerbs("GET", "POST")]
