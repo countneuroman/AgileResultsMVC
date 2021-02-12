@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace AgileResultsMVC.Models
 {
@@ -8,6 +10,6 @@ namespace AgileResultsMVC.Models
         public string FirstName { get; set; }
         public string LastName { get; set; }
         //Задачи пользователя
-        public AllTask AllTask { get; set; }
+        public List<AllTask> AllTask { get; set; }
     }
 }
