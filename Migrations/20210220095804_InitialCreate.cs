@@ -3,26 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace AgileResultsMVC.Migrations
 {
-    public partial class AddRegistration : Migration
+    public partial class InitialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
-                name: "Period",
-                table: "AllTask",
-                type: "nvarchar(max)",
-                nullable: false,
-                defaultValue: "",
-                oldClrType: typeof(string),
-                oldType: "nvarchar(max)",
-                oldNullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "userId",
-                table: "AllTask",
-                type: "nvarchar(450)",
-                nullable: true);
-
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -83,6 +67,30 @@ namespace AgileResultsMVC.Migrations
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AllTask",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Period = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreateData = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CompletionDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AllTask", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AllTask_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -171,11 +179,9 @@ namespace AgileResultsMVC.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AllTask_userId",
+                name: "IX_AllTask_UserId",
                 table: "AllTask",
-                column: "userId",
-                unique: true,
-                filter: "[userId] IS NOT NULL");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -215,21 +221,12 @@ namespace AgileResultsMVC.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_AllTask_AspNetUsers_userId",
-                table: "AllTask",
-                column: "userId",
-                principalTable: "AspNetUsers",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_AllTask_AspNetUsers_userId",
-                table: "AllTask");
+            migrationBuilder.DropTable(
+                name: "AllTask");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
@@ -251,22 +248,6 @@ namespace AgileResultsMVC.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
-
-            migrationBuilder.DropIndex(
-                name: "IX_AllTask_userId",
-                table: "AllTask");
-
-            migrationBuilder.DropColumn(
-                name: "userId",
-                table: "AllTask");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Period",
-                table: "AllTask",
-                type: "nvarchar(max)",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(max)");
         }
     }
 }

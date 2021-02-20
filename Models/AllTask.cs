@@ -20,7 +20,7 @@ namespace AgileResultsMVC.Models
         public DateTime CompletionDate { get; set; }
         //Определяем отношение один к одному
         //(здесь хранятся значения пользователя, к которому относятся задачи).
-        public string userId  { get; set; }
+        public string UserId  { get; set; }
         public User User { get; set; }
     }
 }

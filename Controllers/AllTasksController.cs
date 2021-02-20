@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AgileResultsMVC.Data;
 using AgileResultsMVC.Models;
-
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 namespace AgileResultsMVC.Controllers
 {
+    
     public class AllTasksController : Controller
     {
         private readonly AgileResultsMVCContext _context;
@@ -25,16 +27,20 @@ namespace AgileResultsMVC.Controllers
         public IActionResult VertifyPeriod(AllTask allTask)
         {
             //НЕ РАБОТАЕТ ПРОВЕРКА НА НОЛЬ!
-            /*
-            if (!string.IsNullOrEmpty(allTask.Period))
-            {
-                return Json(true);
-            }
-            */
-            //Вычисляем сколько задач создано на каждый период.
-            int countDayPeriod = _context.AllTask.Count(s => s.Period.StartsWith("Day"));
-            int countWeekPeriod = _context.AllTask.Count(s => s.Period.StartsWith("Week"));
-            int countMonthPeriod = _context.AllTask.Count(s => s.Period.StartsWith("Month"));
+
+            //if (!string.IsNullOrEmpty(allTask.Period))
+            //{
+            //    return Json(true);
+            //}
+
+            //Вычисляем сколько задач создано на каждый период у каждого пользователя.
+            string userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userTasks = from tasks in _context.AllTask
+                                  where tasks.UserId == userId
+                                  select tasks;
+            int countDayPeriod = userTasks.Count(s => s.Period.StartsWith("Day"));
+            int countWeekPeriod = userTasks.Count(s => s.Period.StartsWith("Week"));
+            int countMonthPeriod = userTasks.Count(s => s.Period.StartsWith("Month"));
 
             switch(allTask.Period)
             {
@@ -64,7 +70,16 @@ namespace AgileResultsMVC.Controllers
         // GET: AllTasks
         public async Task<IActionResult> Index()
         {
-            return View(await _context.AllTask.ToListAsync());
+            string userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId!=null)
+            {
+                var AllTaskUser = from tasks in _context.AllTask
+                                  where tasks.UserId==userId
+                                  select tasks;
+                return View(await AllTaskUser.ToListAsync());
+            }
+            //TODO Заменить на встроенное сообщение об ошибке.
+            return NotFound();
         }
 
         // GET: AllTasks/Details/5
@@ -88,6 +103,9 @@ namespace AgileResultsMVC.Controllers
         // GET: AllTasks/Create
         public IActionResult Create()
         {
+            //Данные передавать в представление не обязательно, ведь пользователь не вводит UserId.
+            //var userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            //ViewData["UserId"] = userId;
             return View();
         }
 
@@ -96,10 +114,12 @@ namespace AgileResultsMVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Period,Title,Description,CreateData,CompletionDate")] AllTask allTask)
+        public async Task<IActionResult> Create([Bind("Id,Period,Title,Description,CreateData,CompletionDate,UserId")] AllTask allTask)
         {
+            //Значение = текущий пользователь в системе.
             if (ModelState.IsValid)
             {
+                allTask.UserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
                 _context.Add(allTask);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -128,7 +148,7 @@ namespace AgileResultsMVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Period,Title,Description,CreateData,CompletionDate")] AllTask allTask)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Period,Title,Description,CreateData,CompletionDate,UserId")] AllTask allTask)
         {
             if (id != allTask.Id)
             {
@@ -139,6 +159,7 @@ namespace AgileResultsMVC.Controllers
             {
                 try
                 {
+                    allTask.UserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
                     _context.Update(allTask);
                     await _context.SaveChangesAsync();
                 }
@@ -192,4 +213,5 @@ namespace AgileResultsMVC.Controllers
             return _context.AllTask.Any(e => e.Id == id);
         }
     }
+    
 }
