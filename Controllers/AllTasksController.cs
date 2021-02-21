@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AgileResultsMVC.Data;
 using AgileResultsMVC.Models;
-using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 namespace AgileResultsMVC.Controllers
 {
@@ -26,12 +22,6 @@ namespace AgileResultsMVC.Controllers
         [AcceptVerbs("GET", "POST")]
         public IActionResult VertifyPeriod(AllTask allTask)
         {
-            //НЕ РАБОТАЕТ ПРОВЕРКА НА НОЛЬ!
-
-            //if (!string.IsNullOrEmpty(allTask.Period))
-            //{
-            //    return Json(true);
-            //}
 
             //Вычисляем сколько задач создано на каждый период у каждого пользователя.
             string userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -70,6 +60,7 @@ namespace AgileResultsMVC.Controllers
         // GET: AllTasks
         public async Task<IActionResult> Index()
         {
+            //Если пользователь не авторизован, страница задач не откроется.
             string userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId!=null)
             {
@@ -103,22 +94,17 @@ namespace AgileResultsMVC.Controllers
         // GET: AllTasks/Create
         public IActionResult Create()
         {
-            //Данные передавать в представление не обязательно, ведь пользователь не вводит UserId.
-            //var userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            //ViewData["UserId"] = userId;
             return View();
         }
 
         // POST: AllTasks/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Period,Title,Description,CreateData,CompletionDate,UserId")] AllTask allTask)
         {
-            //Значение = текущий пользователь в системе.
             if (ModelState.IsValid)
             {
+                //Значение = текущий пользователь в системе.
                 allTask.UserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
                 _context.Add(allTask);
                 await _context.SaveChangesAsync();
@@ -144,8 +130,6 @@ namespace AgileResultsMVC.Controllers
         }
 
         // POST: AllTasks/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Period,Title,Description,CreateData,CompletionDate,UserId")] AllTask allTask)
@@ -213,5 +197,4 @@ namespace AgileResultsMVC.Controllers
             return _context.AllTask.Any(e => e.Id == id);
         }
     }
-    
 }
