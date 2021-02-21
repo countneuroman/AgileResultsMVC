@@ -1,10 +1,13 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AgileResultsMVC.Data;
 using AgileResultsMVC.Models;
+using AgileResultsMVC.ViewModels;
 using System.Security.Claims;
+
 namespace AgileResultsMVC.Controllers
 {
     
@@ -106,6 +109,22 @@ namespace AgileResultsMVC.Controllers
             {
                 //Значение = текущий пользователь в системе.
                 allTask.UserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                //Определение даты создания и даты окончания задачи.
+                if(allTask.Period=="Day")
+                {
+                    allTask.CreateData = DateTime.Now;
+                    allTask.CompletionDate = DateTime.Now.AddDays(1);
+                }
+                if (allTask.Period == "Week")
+                {
+                    allTask.CreateData = DateTime.Now;
+                    allTask.CompletionDate = DateTime.Now.AddDays(7);
+                }
+                if (allTask.Period == "Month")
+                {
+                    allTask.CreateData = DateTime.Now;
+                    allTask.CompletionDate = DateTime.Now.AddMonths(1);
+                }
                 _context.Add(allTask);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -114,26 +133,41 @@ namespace AgileResultsMVC.Controllers
         }
 
         // GET: AllTasks/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int? id, TaskEditModel taskEditModel)
         {
             if (id == null)
             {
                 return NotFound();
             }
+            if(id==0)
+            {
+                return NotFound();
+            }
+            //Проверяем, есть ли задача с таким ID.
+            taskEditModel.Id = (int)id;
+            var allTask = await _context.AllTask.FindAsync(taskEditModel.Id);
 
-            var allTask = await _context.AllTask.FindAsync(id);
             if (allTask == null)
             {
                 return NotFound();
             }
-            return View(allTask);
+            //Проверяем, относятся ли данные к тому пользователю, который авторзован.
+            if(allTask.UserId!= this.User.FindFirstValue(ClaimTypes.NameIdentifier))
+            {
+                return NotFound();
+            }
+            //Передаем в модель представления данные, которые нужно редактировать.
+            taskEditModel.Title = allTask.Title;
+            taskEditModel.Description = allTask.Description;
+            return View(taskEditModel);
         }
 
         // POST: AllTasks/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Period,Title,Description,CreateData,CompletionDate,UserId")] AllTask allTask)
+        public async Task<IActionResult> Edit(int id, TaskEditModel taskEditModel)
         {
+            AllTask allTask = _context.AllTask.Find(taskEditModel.Id);
             if (id != allTask.Id)
             {
                 return NotFound();
@@ -143,7 +177,9 @@ namespace AgileResultsMVC.Controllers
             {
                 try
                 {
-                    allTask.UserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    allTask.Title = taskEditModel.Title;
+                    allTask.Description = taskEditModel.Description;
+                    //allTask.UserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
                     _context.Update(allTask);
                     await _context.SaveChangesAsync();
                 }
