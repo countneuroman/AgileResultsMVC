@@ -1,4 +1,19 @@
 # AgileResultsMVC
-Моя реализация приложения ведения задач по системе Agile Results на основе ASP NET.Core и Entity Framework. 
-Просмотреть возможности, которые я планирую реализовать и ошибки, 
-которые я собираюсь исправить можно на Kanban-доске по данной ссылке: https://trello.com/b/fGodBz0o
+
+Application for your task list based Agile Results approaches develops based ASP NET Core MVC and Entity Framework. 
+
+# How to install
+
+This project uses SQL Server LocalDB. 
+
+To create database need (using NET Core CLI):
+
+* Add initial migration:
+ ```sh
+ dotnet ef migrations add migrationName
+ ```
+ * Update database
+  ```sh
+  dotnet ef database update
+  ```
+* Run!
