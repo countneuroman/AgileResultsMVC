@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using AgileResultsMVC.Models;
 
 //Модель представления для регистрации..
 namespace AgileResultsMVC.ViewModels

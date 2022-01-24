@@ -6,11 +6,11 @@ using System.Linq;
 
 namespace AgileResultsMVC.Data
 {
-    public class AgileResultsMVCContext : IdentityDbContext<User>
+    public class AgileResultsMvcContext : IdentityDbContext<User>
     {
         public DbSet<AllTask> AllTask { get; set; }
        
-        public AgileResultsMVCContext(DbContextOptions<AgileResultsMVCContext> options)
+        public AgileResultsMvcContext(DbContextOptions<AgileResultsMvcContext> options)
             : base(options)
         {
         }

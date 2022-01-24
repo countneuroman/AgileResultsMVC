@@ -13,9 +13,9 @@ namespace AgileResultsMVC.Controllers
     
     public class AllTasksController : Controller
     {
-        private readonly AgileResultsMVCContext _context;
+        private readonly AgileResultsMvcContext _context;
 
-        public AllTasksController(AgileResultsMVCContext context)
+        public AllTasksController(AgileResultsMvcContext context)
         {
             _context = context;
         }
@@ -27,34 +27,22 @@ namespace AgileResultsMVC.Controllers
         {
 
             //Вычисляем сколько задач создано на каждый период у каждого пользователя.
-            string userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userTasks = from tasks in _context.AllTask
                                   where tasks.UserId == userId
                                   select tasks;
-            int countDayPeriod = userTasks.Count(s => s.Period.StartsWith("Day"));
-            int countWeekPeriod = userTasks.Count(s => s.Period.StartsWith("Week"));
-            int countMonthPeriod = userTasks.Count(s => s.Period.StartsWith("Month"));
+            var countDayPeriod = userTasks.Count(s => s.Period.StartsWith("Day"));
+            var countWeekPeriod = userTasks.Count(s => s.Period.StartsWith("Week"));
+            var countMonthPeriod = userTasks.Count(s => s.Period.StartsWith("Month"));
 
             switch(allTask.Period)
             {
                 case "Day":
-                    if (countDayPeriod < 3)
-                    {
-                        return Json(true);
-                    }
-                    return Json($"Нельзя создать более 3 задач на день!");
+                    return countDayPeriod < 3 ? Json(true) : Json($"Нельзя создать более 3 задач на день!");
                 case "Week":
-                    if (countWeekPeriod < 3)
-                    {
-                        return Json(true);
-                    }
-                    return Json($"Нельзя создать более 3 задач на неделю!");
+                    return countWeekPeriod < 3 ? Json(true) : Json($"Нельзя создать более 3 задач на неделю!");
                 case "Month":
-                    if (countMonthPeriod < 3)
-                    {
-                        return Json(true);
-                    }
-                    return Json($"Нельзя создать более 3 задач на месяц!");
+                    return countMonthPeriod < 3 ? Json(true) : Json($"Нельзя создать более 3 задач на месяц!");
                 default:
                     return Json($"Неправильное значение периода!");
             }
@@ -64,16 +52,13 @@ namespace AgileResultsMVC.Controllers
         public async Task<IActionResult> Index()
         {
             //Если пользователь не авторизован, страница задач не откроется.
-            string userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId!=null)
-            {
-                var AllTaskUser = from tasks in _context.AllTask
-                                  where tasks.UserId==userId
-                                  select tasks;
-                return View(await AllTaskUser.ToListAsync());
-            }
+            var userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return NotFound();
+            var allTaskUser = from tasks in _context.AllTask
+                where tasks.UserId==userId
+                select tasks;
+            return View(await allTaskUser.ToListAsync());
             //TODO Заменить на встроенное сообщение об ошибке.
-            return NotFound();
         }
 
         // GET: AllTasks/Details/5
@@ -103,46 +88,42 @@ namespace AgileResultsMVC.Controllers
         // POST: AllTasks/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Period,Title,Description,CreateData,CompletionDate,UserId")] AllTask allTask)
+        public async Task<IActionResult> Create(
+            [Bind("Id,Period,Title,Description,CreateData,CompletionDate,UserId")] AllTask allTask)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return View(allTask);
+            //Значение = текущий пользователь в системе.
+            allTask.UserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            switch (allTask.Period)
             {
-                //Значение = текущий пользователь в системе.
-                allTask.UserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
                 //Определение даты создания и даты окончания задачи.
-                if(allTask.Period=="Day")
-                {
+                case "Day":
                     allTask.CreateData = DateTime.Now;
                     allTask.CompletionDate = DateTime.Now.AddDays(1);
-                }
-                if (allTask.Period == "Week")
-                {
+                    break;
+                case "Week":
                     allTask.CreateData = DateTime.Now;
                     allTask.CompletionDate = DateTime.Now.AddDays(7);
-                }
-                if (allTask.Period == "Month")
-                {
+                    break;
+                case "Month":
                     allTask.CreateData = DateTime.Now;
                     allTask.CompletionDate = DateTime.Now.AddMonths(1);
-                }
-                _context.Add(allTask);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                    break;
             }
-            return View(allTask);
+
+            _context.Add(allTask);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: AllTasks/Edit/5
         public async Task<IActionResult> Edit(int? id, TaskEditModel taskEditModel)
         {
-            if (id == null)
+            if (id is null or 0)
             {
                 return NotFound();
             }
-            if(id==0)
-            {
-                return NotFound();
-            }
+
             //Проверяем, есть ли задача с таким ID.
             taskEditModel.Id = (int)id;
             var allTask = await _context.AllTask.FindAsync(taskEditModel.Id);
@@ -152,7 +133,7 @@ namespace AgileResultsMVC.Controllers
                 return NotFound();
             }
             //Проверяем, относятся ли данные к тому пользователю, который авторзован.
-            if(allTask.UserId!= this.User.FindFirstValue(ClaimTypes.NameIdentifier))
+            if(allTask.UserId!= User.FindFirstValue(ClaimTypes.NameIdentifier))
             {
                 return NotFound();
             }
@@ -167,36 +148,31 @@ namespace AgileResultsMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, TaskEditModel taskEditModel)
         {
-            AllTask allTask = _context.AllTask.Find(taskEditModel.Id);
+            var allTask = _context.AllTask.Find(taskEditModel.Id);
             if (id != allTask.Id)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return View(taskEditModel);
+            try
             {
-                try
-                {
-                    allTask.Title = taskEditModel.Title;
-                    allTask.Description = taskEditModel.Description;
-                    //allTask.UserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
-                    _context.Update(allTask);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AllTaskExists(allTask.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                allTask.Title = taskEditModel.Title;
+                allTask.Description = taskEditModel.Description;
+                //allTask.UserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                _context.Update(allTask);
+                await _context.SaveChangesAsync();
             }
-            return View(allTask);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!AllTaskExists(allTask.Id))
+                {
+                    return NotFound();
+                }
+
+                throw;
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: AllTasks/Delete/5

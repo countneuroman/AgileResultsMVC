@@ -9,18 +9,18 @@ using Microsoft.AspNetCore.Identity;
 
 namespace AgileResultsMVC
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllersWithViews();
-            builder.Services.AddDbContext<AgileResultsMVCContext>(options =>
+            builder.Services.AddDbContext<AgileResultsMvcContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("AgileResultsMVCContext")));
 
             builder.Services.AddIdentity<User, IdentityRole>()
-                .AddEntityFrameworkStores<AgileResultsMVCContext>();
+                .AddEntityFrameworkStores<AgileResultsMvcContext>();
 
             var app = builder.Build();
 
