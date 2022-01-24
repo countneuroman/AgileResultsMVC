@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace AgileResultsMVC.ViewModels
+﻿namespace AgileResultsMVC.ViewModels
 {
     public class TaskEditModel
     {

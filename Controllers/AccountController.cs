@@ -26,24 +26,20 @@ namespace AgileResultsMVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if(ModelState.IsValid)
+            if (!ModelState.IsValid) return View(model);
+            var user = new User { Email = model.Email, UserName = model.Email, FirstName = model.FirstName, LastName = model.LastName };
+            //Добавляем пользователя.
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if(result.Succeeded)
             {
-                User user = new User { Email = model.Email, UserName = model.Email, FirstName = model.FirstName, LastName = model.LastName };
-                //Добавляем пользователя.
-                var result = await _userManager.CreateAsync(user, model.Password);
-                if(result.Succeeded)
-                {
-                    //Установка куки.
-                    await _signInManager.SignInAsync(user, false);
-                    return RedirectToAction("Index", "Home");
-                }
-                else
-                {
-                    foreach(var error in result.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                    }
-                }
+                //Установка куки.
+                await _signInManager.SignInAsync(user, false);
+                return RedirectToAction("Index", "Home");
+            }
+
+            foreach(var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
             }
             return View(model);
         }
