@@ -22,5 +22,6 @@ jobs:
       - name: Build AgileResultsMVC
         shell: bash
         run: |
+          cd src
           dotnet restore "AgileResultsMVC.sln"
           dotnet build --no-restore
