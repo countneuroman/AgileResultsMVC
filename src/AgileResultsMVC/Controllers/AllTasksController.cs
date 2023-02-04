@@ -7,22 +7,25 @@ using AgileResultsMVC.Data;
 using AgileResultsMVC.Models;
 using AgileResultsMVC.ViewModels;
 using System.Security.Claims;
+using AgileResultsMVC.Services;
 
 namespace AgileResultsMVC.Controllers;
 
 public class AllTasksController : Controller
 {
-    private readonly AgileResultsMvcContext _context;
+    private readonly AgileResultsMvcDbContext _context;
+    private readonly ITaskService _taskService;
 
-    public AllTasksController(AgileResultsMvcContext context)
+    public AllTasksController(AgileResultsMvcDbContext context, ITaskService taskService)
     {
         _context = context;
+        _taskService = taskService;
     }
 
     //Проверка значения в БД(реализовано атрибутом Remote в модели).
     //Также проверяет количество созданных задач(на каждый период можно создать не более 3 задач!).
     [AcceptVerbs("GET", "POST")]
-    public IActionResult VertifyPeriod(AllTask allTask)
+    public IActionResult VertifyPeriod(UserTask allTask)
     {
 
         //Вычисляем сколько задач создано на каждый период у каждого пользователя.
@@ -51,12 +54,10 @@ public class AllTasksController : Controller
     public async Task<IActionResult> Index()
     {
         //Если пользователь не авторизован, страница задач не откроется.
-        var userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null) return NotFound();
-        var allTaskUser = from tasks in _context.AllTask
-            where tasks.UserId==userId
-            select tasks;
-        return View(await allTaskUser.ToListAsync());
+        var allTaskUser = await _taskService.GetAllUserTasks(userId);
+        return View(allTaskUser);
         //TODO Заменить на встроенное сообщение об ошибке.
     }
 
@@ -64,18 +65,13 @@ public class AllTasksController : Controller
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null)
-        {
             return NotFound();
-        }
-
-        var allTask = await _context.AllTask
-            .FirstOrDefaultAsync(m => m.Id == id);
-        if (allTask == null)
-        {
+        
+        var userTask = await _taskService.GetTaskById(id);
+        if (userTask == null)
             return NotFound();
-        }
-
-        return View(allTask);
+        
+        return View(userTask);
     }
 
     // GET: AllTasks/Create
@@ -88,7 +84,7 @@ public class AllTasksController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(
-        [Bind("Id,Period,Title,Description,CreateData,CompletionDate,UserId")] AllTask allTask)
+        [Bind("Id,Period,Title,Description,CreateData,CompletionDate,UserId")] UserTask allTask)
     {
         if (!ModelState.IsValid) return View(allTask);
         //Значение = текущий пользователь в системе.
@@ -120,22 +116,21 @@ public class AllTasksController : Controller
     {
         if (id is null or 0)
             return NotFound();
-            
-
+        
         //Проверяем, есть ли задача с таким ID.
-        taskEditModel.Id = (int)id;
-        var allTask = await _context.AllTask.FindAsync(taskEditModel.Id);
+        var task = await _taskService.GetTaskById(id);
 
-        if (allTask == null)
+        if (task == null)
             return NotFound();
             
         //Проверяем, относятся ли данные к тому пользователю, который авторзован.
-        if(allTask.UserId!= User.FindFirstValue(ClaimTypes.NameIdentifier))
+        if(task.UserId!= User.FindFirstValue(ClaimTypes.NameIdentifier))
             return NotFound();
             
         //Передаем в модель представления данные, которые нужно редактировать.
-        taskEditModel.Title = allTask.Title;
-        taskEditModel.Description = allTask.Description;
+        taskEditModel.Id = task.Id;
+        taskEditModel.Title = task.Title;
+        taskEditModel.Description = task.Description;
         return View(taskEditModel);
     }
 
@@ -144,23 +139,23 @@ public class AllTasksController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, TaskEditModel taskEditModel)
     {
-        var allTask = _context.AllTask.Find(taskEditModel.Id);
-        if (id != allTask.Id)
+        var task = await _taskService.GetTaskById(id);
+        if (id != task.Id)
             return NotFound();
             
 
         if (!ModelState.IsValid) return View(taskEditModel);
         try
         {
-            allTask.Title = taskEditModel.Title;
-            allTask.Description = taskEditModel.Description;
+            task.Title = taskEditModel.Title;
+            task.Description = taskEditModel.Description;
             //allTask.UserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _context.Update(allTask);
+            _context.Update(task);
             await _context.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!AllTaskExists(allTask.Id))
+            if (!AllTaskExists(task.Id))
                 return NotFound();
 
             throw;
@@ -173,15 +168,12 @@ public class AllTasksController : Controller
     {
         if (id == null)
             return NotFound();
-            
-
-        var allTask = await _context.AllTask
-            .FirstOrDefaultAsync(m => m.Id == id);
-        if (allTask == null)
+        
+        var userTask = await _taskService.GetTaskById(id);
+        if (userTask == null)
             return NotFound();
-            
-
-        return View(allTask);
+        
+        return View(userTask);
     }
 
     // POST: AllTasks/Delete/5
@@ -189,9 +181,7 @@ public class AllTasksController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var allTask = await _context.AllTask.FindAsync(id);
-        _context.AllTask.Remove(allTask);
-        await _context.SaveChangesAsync();
+        await _taskService.RemoveTaskById(id);
         return RedirectToAction(nameof(Index));
     }
 

@@ -1,16 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using AgileResultsMVC.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace AgileResultsMVC.Data
 {
-    public class AgileResultsMvcContext : IdentityDbContext<User>
+    public class AgileResultsMvcDbContext : IdentityDbContext<User>
     {
-        public DbSet<AllTask> AllTask { get; set; }
+        public DbSet<UserTask> AllTask { get; set; }
        
-        public AgileResultsMvcContext(DbContextOptions<AgileResultsMvcContext> options)
+        public AgileResultsMvcDbContext(DbContextOptions<AgileResultsMvcDbContext> options)
             : base(options)
         {
         }

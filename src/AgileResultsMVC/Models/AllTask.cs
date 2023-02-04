@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AgileResultsMVC.Models;
 
-public class AllTask
+public class UserTask
 {
     public int Id { get; set; }
     [Required]

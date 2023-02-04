@@ -7,5 +7,5 @@ public class User : IdentityUser
 {
     public string FirstName { get; set; }
     public string LastName { get; set; }
-    public List<AllTask> AllTask { get; set; }
+    public List<UserTask> AllTask { get; set; }
 }
