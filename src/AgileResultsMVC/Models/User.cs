@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 
-namespace AgileResultsMVC.Models
+namespace AgileResultsMVC.Models;
+
+public class User : IdentityUser
 {
-    //Данная модель используется для аутентификации пользователя.
-    public class User:IdentityUser
-    {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        //Задачи пользователя
-        public List<AllTask> AllTask { get; set; }
-    }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public List<AllTask> AllTask { get; set; }
 }
